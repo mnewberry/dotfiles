@@ -1,0 +1,3 @@
+"synclient TouchpadOff=$(synclient -l | grep -ce TouchpadOff.*0)"
+   m:0x0 + c:199
+   XF86TouchpadToggle
