@@ -1,0 +1,71 @@
+#!/bin/sh
+
+VIEWER=""
+
+for ARG in $@ ; do 
+case $ARG in
+  --show-pdf=*|-s=*)
+  VIEWER="${ARG#*=}"
+  shift
+  ;;
+  *)
+  TARG=$ARG
+  ;;
+esac
+done
+
+if [[ ! -e $TARG ]] ; then echo "no such file" ; exit 1 ; fi
+if [[ ! -d _build ]] ; then mkdir _build \
+  || (echo "could not create _build" && exit 1); fi
+
+
+TARG_PREFIX=_build/`dirname $TARG`
+mkdir -p $TARG_PREFIX
+
+TARG_RAW=`echo -n $TARG | sed -e "s/.mt$//"`
+TARG_RNW=_build/$TARG_RAW.rnw
+TARG_TEX=_build/$TARG_RAW.tex
+TARG_PDF=_build/$TARG_RAW.pdf
+
+cat ~/.mtbuild/header > $TARG_RNW
+echo -n "\\SweaveOpts{prefix=TRUE,prefix.string=_build/$TARG_RAW}" >> $TARG_RNW
+echo "\\begin{document}" >> $TARG_RNW
+echo "\\begin{spacing}{1.14}" >> $TARG_RNW
+cat $TARG >> $TARG_RNW
+cat ~/.mtbuild/footer >> $TARG_RNW
+cp ~/.mtbuild/refstyle.bst $TARG_PREFIX
+ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib 
+
+# Here we suppress messages from libraries in order to allow actual errors
+# from R to bubble up to the user
+read -d '' SWEAVE_CMD <<EOM
+suppressMessages(library(filehash));
+suppressMessages(require(stashR));
+require(cacheSweave,quietly=TRUE);
+setCacheDir("_build");
+Sweave("$TARG_RNW",output="$TARG_TEX",driver=cacheSweaveDriver);
+EOM
+
+echo $SWEAVE_CMD | R --vanilla 2>&1 > ~/.mtbuild/log
+
+# We don't allow LaTeX the luxury of talking to the user, because it is too
+# loquacious.
+if [[ -e $TARG_TEX ]] 
+then 
+  if [[ ! -e _build/$TARG_RAW.aux ]] 
+  then pdflatex -interaction batchmode -draftmode \
+        -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
+  fi
+  pushd $TARG_PREFIX 2>&1 >> ~/.mtbuild/log
+  bibtex $TARG_RAW 2>&1 >> ~/.mtbuild/log
+  popd 2>&1 >> ~/.mtbuild/log
+  pdflatex -interaction batchmode -draftmode \
+    -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
+  pdflatex -interaction scrollmode \
+    -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
+else echo "Error in creating tex file.  See ~/.mtbuild/log."
+fi
+
+if [[ -n $VIEWER ]] ; then 
+  $VIEWER $TARG_PDF & 
+fi
