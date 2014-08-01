@@ -23,7 +23,7 @@ host:~/topic $
 The above will render and display the fragment as a full latex document with a
 references section and my favorite formatting.  The `vimrc` also provides a
 method to call `mtbuild` upon writing any `.mt` files to the disk, to ensure
-that the pdf on display is corresponds to the file on disk:
+that the pdf on display corresponds to the file on disk:
 
 ```
 host:~/topic $ ls
