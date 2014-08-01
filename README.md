@@ -36,7 +36,8 @@ host:~/topic $ evince _build/notes.pdf
 To install `mtbuild`, copy `mtbuild/` to `~/.mtbuild/`, populate
 `~/.mtbuild/refstyle.bst` and `~/.mtbuild/index.bib` with your favorite bibtex
 style and bibliography respectively (they can be symlinks), and copy
-`bin/mtbuild` somewhere in your `PATH`.
+`bin/mtbuild` somewhere in your `PATH`.  It depends on LaTeX, R, Sweave, and
+cacheSweave, so make sure those are installed.
 
 notion
 ------
