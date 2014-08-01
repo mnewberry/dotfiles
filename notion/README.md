@@ -1,10 +1,13 @@
 notion keybindings and austere look
 ===================================
 
-The idea behind the key bindings is that movement between frames is with alt +
-vim keys \[hjl\] (k is still the ion metakey).  Movement between objects within
-a frame is alt + shift + \[hl\].  Alt + shift + tab cycles workspaces.
-Mnemonic: The movement keys with shift change what is visible, the movement
-keys without shift just change focus.  Alt + tab by itself used to switch
-between monitors in a multi-screen X configuration, before the xrandr days.
-The rest of the bindings should be similar to ion2.
+I strongly prefer the logic of this keybinding scheme to the default:
+
+To move between visible objects, alt + direction.  To move from a
+visible to an invisible object, alt + shift + same.
+
+Thus, movement between frames is with alt + vim keys \[hjl\] (k is still the ion
+metakey), and movement between objects within a frame is alt + shift + \[hl\].
+alt + tab cycles between screens, and alt + shift + tab cycles workspaces.
+
+The rest of the bindings should be roughly similar to ion2.

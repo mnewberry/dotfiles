@@ -1,4 +1,34 @@
 dotfiles
 ========
 
-the interesting configuration state of unix programs
+The interesting configuration state of unix programs
+
+mtbuild
+-------
+
+`mtbuild` is a script for efficiently rendering Sweave (LaTeX) fragments, while
+shuffling R and LaTeX's numerous intermediary files under the rug in `_build`.  It's all to support this workflow:
+
+```
+host:~ $ mkdir topic
+host:~ $ cd topic/
+host:~/topic $ ls
+host:~/topic $ vi notes.mt
+host:~/topic $ echo "$a^2 + b^2 = c^2$\cite{pythagoras}" > notes.mt
+host:~/topic $ mtbuild --show-pdf=evince random_notes.mt
+host:~/topic $ ls
+_build  random_notes.mt
+host:~/topic $ 
+```
+
+The above will render the fragment as a full latex document with a references
+section and my favorite formatting.  The `vimrc` also provides a method to call
+`mtbuild` upon writing any `.mt` files to the disk, to ensure that the pdf on
+display is corresponds to the file on disk.
+
+It's rough, but very useful.
+
+notion
+------
+
+See README.md in that section.
