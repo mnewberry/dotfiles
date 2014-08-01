@@ -33,7 +33,10 @@ _build  notes.mt
 host:~/topic $ evince _build/notes.pdf
 ```
 
-It's rough, but very useful.
+To install `mtbuild`, copy `mtbuild/` to `~/.mtbuild/`, populate
+`~/.mtbuild/refstyle.bst` and `~/.mtbuild/index.bib` with your favorite bibtex
+style and bibliography respectively (they can be symlinks), and copy
+`bin/mtbuild` somewhere in your `PATH`.
 
 notion
 ------
