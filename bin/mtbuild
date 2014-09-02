@@ -8,11 +8,72 @@ case $ARG in
   VIEWER="${ARG#*=}"
   shift
   ;;
+  --help|-h)
+  echo "mtbuild -- render LaTeX/Sweave fragments (mt or mp files) or rnw"
+  echo "  files to pdf.  mt or mp files will be prefixed and suffixed by"
+  echo "  ~/.mtbuild/header.(mt|mp) and ~/.mtbuild/footer.(mt|mp)"
+  echo "  respectively.  Files suffixed with mt will be rendered as an"
+  echo "  article, and mp as a beamer presentation."
+  echo ""
+  echo "Usage:"
+  echo "  mtbuild [options] file"
+  echo "  mtbuild [options] --diff file1 file2"
+  echo ""
+  echo "Options:"
+  echo "  --show-pdf=<foo>    Open resulting pdf in viewer <foo>"
+  exit 0
+  ;;
+  --diff|-d)
+  shift
+  DIFF="yes"
+  TARG1=$1
+  TARG2=$2
+  ;;
   *)
   TARG=$ARG
   ;;
 esac
 done
+
+function texit { 
+  PREFIX=$1; RAW=$2; TEX=$3;
+  # We don't allow LaTeX the luxury of talking to the user, because it is too
+  # loquacious.
+  if [[ -e $TEX ]] 
+  then 
+    if [[ ! -e _build/$RAW.aux ]] 
+    then pdflatex -interaction batchmode -draftmode \
+          -output-directory $PREFIX $TEX 2>&1 >> ~/.mtbuild/log
+    fi
+    pushd $PREFIX 2>&1 >> ~/.mtbuild/log
+    bibtex $RAW 2>&1 >> ~/.mtbuild/log
+    popd 2>&1 >> ~/.mtbuild/log
+    pdflatex -interaction batchmode -draftmode \
+      -output-directory $PREFIX $TEX 2>&1 >> ~/.mtbuild/log
+    pdflatex -interaction scrollmode \
+      -output-directory $PREFIX $TEX 2>&1 >> ~/.mtbuild/log
+  else echo "Error in creating tex file.  See ~/.mtbuild/log."
+  fi
+}
+
+if [[ $DIFF == "yes" ]] ; then 
+  if [[ ! -e $TARG1 ]] ; then echo "no such file" ; exit 1 ; fi
+  if [[ ! -e $TARG2 ]] ; then echo "no such file" ; exit 1 ; fi
+  mtbuild $TARG1
+  mtbuild $TARG2
+  TARG1_RAW=`echo -n $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+  TARG2_RAW=`echo -n $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+  TARG1_NAME=`basename $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+  TARG2_NAME=`basename $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+  DIFF_NAME=$TARG1_NAME-$TARG2_NAME.diff
+  latexdiff _build/$TARG1_RAW.tex _build/$TARG2_RAW.tex \
+    > _build/$DIFF_NAME.tex
+  texit _build/ $DIFF_NAME _build/$DIFF_NAME.tex
+  if [[ -n $VIEWER ]] ; then 
+    $VIEWER _build/$DIFF_NAME.pdf & 
+  fi
+  exit 0
+fi
 
 if [[ ! -e $TARG ]] ; then echo "no such file" ; exit 1 ; fi
 if [[ ! -d _build ]] ; then mkdir _build \
@@ -22,19 +83,30 @@ if [[ ! -d _build ]] ; then mkdir _build \
 TARG_PREFIX=_build/`dirname $TARG`
 mkdir -p $TARG_PREFIX
 
-TARG_RAW=`echo -n $TARG | sed -e "s/.mt$//"`
+TARG_RAW=`echo -n $TARG | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+TARG_SUFFIX=`echo -n $TARG \
+  | sed -e 's/.*\.\(mt\|rnw\|mp\)$/\1/i' | tr 'RNWMTP' 'rnwmtp'`
 TARG_RNW=_build/$TARG_RAW.rnw
 TARG_TEX=_build/$TARG_RAW.tex
 TARG_PDF=_build/$TARG_RAW.pdf
 
-cat ~/.mtbuild/header > $TARG_RNW
-echo -n "\\SweaveOpts{prefix=TRUE,prefix.string=_build/$TARG_RAW}" >> $TARG_RNW
+echo -n > $TARG_RNW
+if [[ -e ~/.mtbuild/header.$TARG_SUFFIX ]] 
+then cat ~/.mtbuild/header.$TARG_SUFFIX > $TARG_RNW 
+fi
+if [[ $TARG_SUFFIX != "rnw" ]] ; then
+echo "\\SweaveOpts{prefix=TRUE,prefix.string=_build/$TARG_RAW}" >> $TARG_RNW
 echo "\\begin{document}" >> $TARG_RNW
-echo "\\begin{spacing}{1.14}" >> $TARG_RNW
 cat $TARG >> $TARG_RNW
-cat ~/.mtbuild/footer >> $TARG_RNW
+else
+cat $TARG | sed -e "s/\\(\\\\usepackage.*{Sweave}\\)/\\1\\n\\\\SweaveOpts{prefix=TRUE,prefix.string=_build\\/$TARG_RAW}/" \
+  >> $TARG_RNW
+fi
+if [[ -e ~/.mtbuild/footer.$TARG_SUFFIX ]] 
+then cat ~/.mtbuild/footer.$TARG_SUFFIX >> $TARG_RNW
+fi
 cp ~/.mtbuild/refstyle.bst $TARG_PREFIX
-ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib 
+ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib
 
 # Here we suppress messages from libraries in order to allow actual errors
 # from R to bubble up to the user
@@ -48,23 +120,7 @@ EOM
 
 echo $SWEAVE_CMD | R --vanilla 2>&1 > ~/.mtbuild/log
 
-# We don't allow LaTeX the luxury of talking to the user, because it is too
-# loquacious.
-if [[ -e $TARG_TEX ]] 
-then 
-  if [[ ! -e _build/$TARG_RAW.aux ]] 
-  then pdflatex -interaction batchmode -draftmode \
-        -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
-  fi
-  pushd $TARG_PREFIX 2>&1 >> ~/.mtbuild/log
-  bibtex $TARG_RAW 2>&1 >> ~/.mtbuild/log
-  popd 2>&1 >> ~/.mtbuild/log
-  pdflatex -interaction batchmode -draftmode \
-    -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
-  pdflatex -interaction scrollmode \
-    -output-directory $TARG_PREFIX $TARG_TEX 2>&1 >> ~/.mtbuild/log
-else echo "Error in creating tex file.  See ~/.mtbuild/log."
-fi
+texit $TARG_PREFIX $TARG_RAW $TARG_TEX
 
 if [[ -n $VIEWER ]] ; then 
   $VIEWER $TARG_PDF & 
