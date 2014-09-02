@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# VULNURABILITIES: This script can cause unintuitive behavior (or exploit) if
+# '.' is in the path.  Just don't ever do that.
+
+
+# This pretend-parsing of find's arguments could be forever improved,
+# obviously.  Patches are welcome!
+
+OPTIONS=()
+while [ -n $1 ] ; do
+  case $1 in
+    -H|-L|-P|-O*)
+      OPTIONS=("${OPTIONS[@]}" $1)
+      shift
+      ;;
+    -D)
+      OPTIONS=("${OPTIONS[@]}" $1)
+      shift
+      while [ -n $1 ] ; do
+        case $1 in
+          help|tree|stat|opt|rates)
+            OPTIONS=("${OPTIONS[@]}" $1)
+            shift
+          ;;
+          *) break
+          ;;
+        esac
+      done
+      ;;
+    *)
+     break ;;
+  esac
+done
+      
+PATHS=()
+while [[ -n $1 ]] ; do
+  case $1 in
+    -*|\(|!) 
+      break
+      ;;
+    *)
+      PATHS=("${PATHS[@]}" $1)
+      shift
+      ;;
+  esac
+done
+
+for FI in ${PATHS[@]} ; do
+  git check-ignore $FI
+  if [ $? == 128 ] ; then exit 128 ; fi
+done
+
+EXTRA="-print"
+for ARG in $@ ; do
+  case $ARG in
+    -delete|-exec|-execdir|-fls|-fprint|-fprint0|-fprintf|-ls|-ok|-okdir|-print|-print0|-printf|-prune|-quit)
+      EXTRA=""
+      ;;
+  esac
+done
+
+find ${OPTIONS[@]} ${PATHS[@]} \( -not -path '*/.git*' -a -not -exec git check-ignore -q {} \; \) $@ $EXTRA
