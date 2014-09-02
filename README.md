@@ -39,6 +39,12 @@ style and bibliography respectively (they can be symlinks), and copy
 `bin/mtbuild` somewhere in your `PATH`.  It depends on LaTeX, R, Sweave, and
 cacheSweave, so make sure those are installed.
 
+git-find
+--------
+
+If `git-find` is in the path, commands of the form `git find ...` will behave
+as unix `find ...`, but ignoring any files listed in the `.gitignore`.
+
 notion
 ------
 
