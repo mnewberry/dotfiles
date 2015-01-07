@@ -35,3 +35,10 @@
 \newcommand{\gene}[1]{\textit{#1}}
 \usepackage[noae]{Sweave} 
 \usepackage{setspace}
+
+% amsart's section headings otherwise have an awkward place and face.
+\makeatletter
+\def\section{\@startsection{section}{1}%
+\z@{.7\linespacing\@plus\linespacing}{.5\linespacing}%
+{\normalfont\bfseries}}
+\makeatother
