@@ -31,8 +31,8 @@ defbindings("WScreen", {
     }),
    
     --Configure when there are multiple screens 
-    --bdoc("Go to next/previous screen on multihead setup."),
-    --kpress(META.."Tab", "ioncore.goto_next_screen()"),
+    bdoc("Go to next/previous screen on multihead setup."),
+    kpress(META.."Tab", "ioncore.goto_next_screen()"),
 
     bdoc("Create a new workspace of chosen default type."),
     kpress("F9", "ioncore.create_ws(_)"),
@@ -111,6 +111,12 @@ defbindings("WMPlex.toplevel", {
 
     bdoc("Query for workspace to go to or create a new one."),
     kpress("F9", "mod_query.query_workspace(_)"),
+
+    bdoc("Configure external display DP1 on."),
+    kpress("XF86Eject", "ioncore.exec_on(_, 'xrandr --output DP1 --auto --left-of LVDS1')"),
+
+    bdoc("Configure external display DP1 off."),
+    kpress("XF86Display", "ioncore.exec_on(_, 'xrandr --output DP1 --off')"),
     
     bdoc("Query for a client window to go to."),
     kpress(META.."G", "mod_query.query_gotoclient(_)"),
