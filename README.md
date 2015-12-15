@@ -49,3 +49,15 @@ notion
 ------
 
 See README.md in that section.
+
+mutt
+----
+
+Mutt has a very featureful interface for autocompletion of email addresses and
+other things.  We ignore all that.
+
+In a brutal, simple solution, `mutt-grep-maildir <maildir> <outfile>` builds a
+list recipient addresses of any email within `maildir` and lists them to
+`outfile`.  The `muttrc` fragment shows how to connect a list of email
+addresses stored in `~/.mutt/addressdb` to mutt's `Ctrl-t` autocompletion
+feature.  What fun!

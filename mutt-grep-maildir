@@ -1,0 +1,14 @@
+#!/bin/bash
+
+MAILDIR=${1:-'.'}
+DEST=${2:-'mutt-grep-maildir-addresses'}
+
+echo "Writing to $DEST"
+
+find $MAILDIR -type f -exec cat {} \; \
+  | grep -e '^\(Cc:\|To:\)' \
+  | sed -e 's/,/\nXx:/g' \
+  | cut -d ' ' -f 2- \
+  | sort | uniq \
+  | grep -v '^\w*$' \
+  | grep -v '^Xx:' > $DEST

@@ -1,0 +1,2 @@
+# Tab (or ^T) autocompletion in email addresses
+set query_command = "echo; cat ~/.mutt/addressdb | grep '%s'"
