@@ -4,6 +4,7 @@
 \usepackage[math]{iwona}
 \usepackage{libertine}
 \renewcommand*\familydefault{\sfdefault}
+\usepackage[defaultmono,scale=0.8]{droidmono}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
 \usepackage{epstopdf}
@@ -23,6 +24,7 @@
   {\insertinstitute}\par\bigskip\par
   {\large \insertdate}}
 
+
 \setbeamertemplate{frametitle}{\hbox{}\vfill\hspace{-0.15in}\insertframetitle}
 
 \newcommand{\rightimage}[1]{
@@ -40,6 +42,10 @@
 \newcommand{\fullimage}[1]{
   \setbeamertemplate{background}{
     \includegraphics[width=\paperwidth,height=\paperheight]{#1}} }
+
+\newcommand{\fullcenterimg}[1]{
+  \setbeamertemplate{background}{
+    \includegraphics[width=\paperwidth]{#1} } }
 
 \newcommand{\footcredit}[1]{
   \setbeamertemplate{footline}{\vspace{-0.2in}\scriptsize \color{gray} #1}}

@@ -56,17 +56,69 @@ function texit {
   fi
 }
 
+function hidenonstandard {
+  cat $1 \
+    | sed -e 's/\\party/(d\/dy)/g' \
+    | sed -e 's/\\half/(1\/2)/g' \
+    | sed -e 's/\\code/CODE/g' \
+    | sed -e 's/\\TODO/TODO/g' \
+    | sed -e 's/\\impl/IMPL/g' \
+    | sed -e 's/\\Var/VAR/g' \
+    | sed -e 's/\\Ber/BER/g' \
+    | sed -e 's/\\Poly/POLY/g' \
+    | sed -e 's/\\Binom/BINOM/g' \
+    | sed -e 's/\\Pois/POIS/g' \
+    | sed -e 's/\\Cov/COV/g' \
+    | sed -e 's/\\Corr/CORR/g' \
+    | sed -e 's/\\E/EX/g' \
+    | sed -e 's/\\Ex/EX/g' \
+    | sed -e 's/\\Erf/ERF/g' \
+    | sed -e 's/\\Pro/PROB/g' \
+    | sed -e 's/\\N/N/g' \
+    | sed -e 's/\\one/ONE/g' \
+    | sed -e 's/\\U/U/g' \
+    | sed -e 's/\\Z/Z/g' \
+    | sed -e 's/\\inv/INVERSE/g' \
+    | sed -e 's/\\gene/GENE/g' \
+    > $2
+}
+function hidenewcommand {
+  TMP=`mktemp`
+  cat $1 | grep -v newcommand > $TMP
+  mv $TMP $1
+}
+
 if [[ $DIFF == "yes" ]] ; then 
-  if [[ ! -e $TARG1 ]] ; then echo "no such file" ; exit 1 ; fi
-  if [[ ! -e $TARG2 ]] ; then echo "no such file" ; exit 1 ; fi
-  mtbuild $TARG1
-  mtbuild $TARG2
-  TARG1_RAW=`echo -n $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
-  TARG2_RAW=`echo -n $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
-  TARG1_NAME=`basename $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
-  TARG2_NAME=`basename $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+  if [[ ! -e $TARG1 ]] ; then echo "no such file ($TARG1)" ; exit 1 ; fi
+  if [[ ! -e $TARG2 ]] ; then echo "no such file ($TARG2)" ; exit 1 ; fi
+  TARG1_RAW=`echo -n $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
+  TARG2_RAW=`echo -n $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
+  TARG1_SUFFIX=`echo -n $TARG1 \
+    | sed -e 's/.*\.\(mt\|rnw\|mp\)$/\1/i' | tr 'RNWMTP' 'rnwmtp'`
+  TARG2_SUFFIX=`echo -n $TARG2 \
+    | sed -e 's/.*\.\(mt\|rnw\|mp\)$/\1/i' | tr 'RNWMTP' 'rnwmtp'`
+  TARG1_NAME=`basename $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
+  TARG2_NAME=`basename $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
+  if [[ $TARG1 -nt _build/$TARG1_RAW.pdf ]] ; then 
+    TG=$TARG1_RAW-mtbuild-sanitized.$TARG1_SUFFIX
+    hidenonstandard $TARG1 $TG
+    mtbuild $TG
+    hidenewcommand _build/$TARG1_RAW-mtbuild-sanitized.tex
+    rm $TG ; fi 
+  if [[ $TARG2 -nt _build/$TARG2_RAW.pdf ]] ; then 
+    TG=$TARG2_RAW-mtbuild-sanitized.$TARG2_SUFFIX
+    hidenonstandard $TARG2 $TG
+    mtbuild $TG
+    hidenewcommand _build/$TARG2_RAW-mtbuild-sanitized.tex
+    cat _build/$TARG2_RAW-mtbuild-sanitized.tex | grep -v '\newcommand'
+    rm $TG ; fi 
   DIFF_NAME=$TARG1_NAME-$TARG2_NAME.diff
-  latexdiff _build/$TARG1_RAW.tex _build/$TARG2_RAW.tex \
+
+  echo latexdiff _build/$TARG1_RAW-mtbuild-sanitized.tex \
+            _build/$TARG2_RAW-mtbuild-sanitized.tex \
+    ">" _build/$DIFF_NAME.tex
+  latexdiff _build/$TARG1_RAW-mtbuild-sanitized.tex \
+            _build/$TARG2_RAW-mtbuild-sanitized.tex \
     > _build/$DIFF_NAME.tex
   texit _build/ $DIFF_NAME _build/$DIFF_NAME.tex
   if [[ -n $VIEWER ]] ; then 
@@ -83,7 +135,7 @@ if [[ ! -d _build ]] ; then mkdir _build \
 TARG_PREFIX=_build/`dirname $TARG`
 mkdir -p $TARG_PREFIX
 
-TARG_RAW=`echo -n $TARG | sed -e 's/\.\(mt\|Rnw\|rnw\)$//'`
+TARG_RAW=`echo -n $TARG | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
 TARG_SUFFIX=`echo -n $TARG \
   | sed -e 's/.*\.\(mt\|rnw\|mp\)$/\1/i' | tr 'RNWMTP' 'rnwmtp'`
 TARG_RNW=_build/$TARG_RAW.rnw
@@ -98,30 +150,40 @@ if [[ $TARG_SUFFIX != "rnw" ]] ; then
 echo "\\SweaveOpts{prefix=TRUE,prefix.string=_build/$TARG_RAW}" >> $TARG_RNW
 echo "\\begin{document}" >> $TARG_RNW
 cat $TARG >> $TARG_RNW
+cp ~/.mtbuild/refstyle.bst $TARG_PREFIX
 else
 cat $TARG | sed -e "s/\\(\\\\usepackage.*{Sweave}\\)/\\1\\n\\\\SweaveOpts{prefix=TRUE,prefix.string=_build\\/$TARG_RAW}/" \
   >> $TARG_RNW
+# This covers the case that the rnw file refers to a bst in the same directory
+# without doing too much harm.  Ideally, we would parse the rnw file for
+# \bibliographystyle and move that appropriately.
+if [[ -e *.bst ]] ; then cp *.bst $TARG_PREFIX ; fi
 fi
 if [[ -e ~/.mtbuild/footer.$TARG_SUFFIX ]] 
 then cat ~/.mtbuild/footer.$TARG_SUFFIX >> $TARG_RNW
 fi
-cp ~/.mtbuild/refstyle.bst $TARG_PREFIX
+if [[ -e ./index.bib ]]
+then # Important to remove file first, rather than copy
+rm $TARG_PREFIX/index.bib && cp index.bib $TARG_PREFIX/index.bib
+else
 ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib
+fi
 
 # Here we suppress messages from libraries in order to allow actual errors
 # from R to bubble up to the user
+#require(cacheSweave,quietly=TRUE);
+#setCacheDir("_build");
+#Sweave("$TARG_RNW",output="$TARG_TEX",driver=cacheSweaveDriver);
 read -d '' SWEAVE_CMD <<EOM
 suppressMessages(library(filehash));
 suppressMessages(require(stashR));
-require(cacheSweave,quietly=TRUE);
-setCacheDir("_build");
-Sweave("$TARG_RNW",output="$TARG_TEX",driver=cacheSweaveDriver);
+Sweave("$TARG_RNW",output="$TARG_TEX");
 EOM
 
-echo $SWEAVE_CMD | R --vanilla 2>&1 > ~/.mtbuild/log
+echo $SWEAVE_CMD | R --vanilla &> ~/.mtbuild/log
 
 texit $TARG_PREFIX $TARG_RAW $TARG_TEX
 
 if [[ -n $VIEWER ]] ; then 
-  $VIEWER $TARG_PDF & 
+  $VIEWER $TARG_PDF &
 fi

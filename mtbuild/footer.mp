@@ -1,6 +1,6 @@
 \appendix
 
-\frame[allowframebreaks]{\frametitle{References}
+\frame{\frametitle{References}
 \footnotesize
 \bibliographystyle{abbrvnat}
 \bibliography{index}{}\vfill}

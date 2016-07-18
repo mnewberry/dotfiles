@@ -1,4 +1,4 @@
-\bibliographystyle{refstyle}
+\bibliographystyle{named}
 \bibliography{index}{}
 
 \end{document}
