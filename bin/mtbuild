@@ -164,7 +164,7 @@ then cat ~/.mtbuild/footer.$TARG_SUFFIX >> $TARG_RNW
 fi
 if [[ -e ./index.bib ]]
 then # Important to remove file first, rather than copy
-rm $TARG_PREFIX/index.bib && cp index.bib $TARG_PREFIX/index.bib
+rm $TARG_PREFIX/index.bib ; cp index.bib $TARG_PREFIX/index.bib
 else
 ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib
 fi
