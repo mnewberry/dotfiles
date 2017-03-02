@@ -45,6 +45,8 @@
 \usepackage[round]{natbib}  % Comment this out in case of bib problems
 \renewcommand{\cite}{\citep}
 \usepackage{multicol}
+\usepackage[hidelinks]{hyperref}
+\usepackage{wrapfig}
 
 
 % amsart's section headings otherwise have an awkward place and face.
@@ -53,4 +55,3 @@
 \z@{.7\linespacing\@plus\linespacing}{.5\linespacing}%
 {\normalfont\bfseries}}
 \makeatother
-

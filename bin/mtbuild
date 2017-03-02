@@ -1,14 +1,9 @@
 #!/bin/sh
 
 VIEWER=""
+RARG=""
 
-for ARG in $@ ; do 
-case $ARG in
-  --show-pdf=*|-s=*)
-  VIEWER="${ARG#*=}"
-  shift
-  ;;
-  --help|-h)
+function printhelp {
   echo "mtbuild -- render LaTeX/Sweave fragments (mt or mp files) or rnw"
   echo "  files to pdf.  mt or mp files will be prefixed and suffixed by"
   echo "  ~/.mtbuild/header.(mt|mp) and ~/.mtbuild/footer.(mt|mp)"
@@ -20,20 +15,50 @@ case $ARG in
   echo "  mtbuild [options] --diff file1 file2"
   echo ""
   echo "Options:"
-  echo "  --show-pdf=<foo>    Open resulting pdf in viewer <foo>"
-  exit 0
-  ;;
-  --diff|-d)
-  shift
-  DIFF="yes"
-  TARG1=$1
-  TARG2=$2
-  ;;
-  *)
-  TARG=$ARG
-  ;;
-esac
+  echo "  --show-pdf=<foo>  Open resulting pdf in viewer <foo>"
+  echo "  --rarg=<foo>      set mtbuild_arg to <foo> in the rnw"
+}
+
+SHORT=hs:r:d
+LONG=show-pdf:,rarg:,help,diff
+TARG1=""
+TARG2=""
+
+PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
+if [[ $? != 0 ]]; then printhelp ; exit 2 ; fi
+eval set -- "$PARSED"
+
+while true ; do 
+  case $1 in
+    --show-pdf|-s)
+      VIEWER="$2"
+      shift 2
+      ;;
+    --rarg|-r)
+      RARG="$2"
+      shift 2
+      ;;
+    --help|-h)
+      printhelp
+      exit 0
+      ;;
+    --diff|-d)
+      DIFF="yes"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+  esac
 done
+
+if [[ $DIFF == "yes" ]] ; then 
+  TARG1=$1 
+  TARG2=$2 
+else 
+  TARG=$1
+fi
 
 function texit { 
   PREFIX=$1; RAW=$2; TEX=$3;
@@ -99,13 +124,13 @@ if [[ $DIFF == "yes" ]] ; then
     | sed -e 's/.*\.\(mt\|rnw\|mp\)$/\1/i' | tr 'RNWMTP' 'rnwmtp'`
   TARG1_NAME=`basename $TARG1 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
   TARG2_NAME=`basename $TARG2 | sed -e 's/\.\(mt\|Rnw\|rnw\|mp\)$//'`
-  if [[ $TARG1 -nt _build/$TARG1_RAW.pdf ]] ; then 
+  if [[ $TARG1 -nt _build/$TARG1_RAW-mtbuild-sanitized.pdf ]] ; then 
     TG=$TARG1_RAW-mtbuild-sanitized.$TARG1_SUFFIX
     hidenonstandard $TARG1 $TG
     mtbuild $TG
     hidenewcommand _build/$TARG1_RAW-mtbuild-sanitized.tex
     rm $TG ; fi 
-  if [[ $TARG2 -nt _build/$TARG2_RAW.pdf ]] ; then 
+  if [[ $TARG2 -nt _build/$TARG2_RAW-mtbuild-sanitized.pdf ]] ; then 
     TG=$TARG2_RAW-mtbuild-sanitized.$TARG2_SUFFIX
     hidenonstandard $TARG2 $TG
     mtbuild $TG
@@ -149,6 +174,10 @@ fi
 if [[ $TARG_SUFFIX != "rnw" ]] ; then
 echo "\\SweaveOpts{prefix=TRUE,prefix.string=_build/$TARG_RAW}" >> $TARG_RNW
 echo "\\begin{document}" >> $TARG_RNW
+echo "<<echo=FALSE>>=" >> $TARG_RNW
+echo "mtbuild_arg=\"$RARG\"" >> $TARG_RNW
+echo "source(\"~/.mtbuild/mt-common.R\")" >> $TARG_RNW
+echo "@" >> $TARG_RNW
 cat $TARG >> $TARG_RNW
 cp ~/.mtbuild/refstyle.bst $TARG_PREFIX
 else
@@ -181,8 +210,9 @@ Sweave("$TARG_RNW",output="$TARG_TEX");
 EOM
 
 echo $SWEAVE_CMD | R --vanilla &> ~/.mtbuild/log
-
-texit $TARG_PREFIX $TARG_RAW $TARG_TEX
+if [ $? -eq 0 ] ; then
+  texit $TARG_PREFIX $TARG_RAW $TARG_TEX
+fi
 
 if [[ -n $VIEWER ]] ; then 
   $VIEWER $TARG_PDF &
