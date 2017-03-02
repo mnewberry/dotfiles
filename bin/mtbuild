@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 VIEWER=""
 RARG=""
@@ -198,14 +198,9 @@ else
 ln -sf ~/.mtbuild/index.bib $TARG_PREFIX/index.bib
 fi
 
-# Here we suppress messages from libraries in order to allow actual errors
+# Try to suppress messages from libraries in order to allow actual errors
 # from R to bubble up to the user
-#require(cacheSweave,quietly=TRUE);
-#setCacheDir("_build");
-#Sweave("$TARG_RNW",output="$TARG_TEX",driver=cacheSweaveDriver);
 read -d '' SWEAVE_CMD <<EOM
-suppressMessages(library(filehash));
-suppressMessages(require(stashR));
 Sweave("$TARG_RNW",output="$TARG_TEX");
 EOM
 
