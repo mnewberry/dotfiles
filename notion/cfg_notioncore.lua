@@ -54,6 +54,7 @@ defbindings("WScreen", {
     kpress(META.."J", "ioncore.goto_next(_chld, 'below')", "_chld:non-nil"),
     kpress(META.."H", "ioncore.goto_next(_chld, 'left')", "_chld:non-nil"),
     kpress(META.."L", "ioncore.goto_next(_chld, 'right')", "_chld:non-nil"),
+    kpress(META.."Z", "ioncore.exec_on(_, 'slock')"),
 })
 
 
@@ -98,25 +99,34 @@ defbindings("WMPlex.toplevel", {
     kpress(META.."T", "WRegion.set_tagged(_sub, 'toggle')", "_sub:non-nil"),
 
     bdoc("Make a terminal with a large 12-pixel font"),
-    kpress("F1", "ioncore.exec_on(_, 'urxvt -fn \\'xft:Bitstream Vera Sans Mono:pixelsize=10\\'')"),
+    kpress(META.."F1", "ioncore.exec_on(_, 'urxvt -fn \\'xft:Bitstream Vera Sans Mono:pixelsize=10\\'')"),
     
     bdoc("Run a terminal emulator."),
-    kpress("F2", "ioncore.exec_on(_, XTERM or 'xterm')"),
+    kpress(META.."F2", "ioncore.exec_on(_, XTERM or 'x-terminal-emulator')"),
     
     bdoc("Query for command line to execute."),
-    kpress("F3", "mod_query.query_exec(_)"),
+    kpress(META.."F3", "mod_query.query_exec(_)"),
+
+    bdoc("Volume down"),
+    kpress("XF86AudioLowerVolume", "ioncore.exec_on(_, 'amixer -q sset Master 3%-')"),
+
+    bdoc("Volume up"),
+    kpress("XF86AudioRaiseVolume", "ioncore.exec_on(_, 'amixer -q sset Master 3%+')"),
 
     bdoc("Query for Lua code to execute."),
-    kpress(META.."F3", "mod_query.query_lua(_)"),
+    kpress(META.."F4", "mod_query.query_lua(_)"),
 
     bdoc("Query for workspace to go to or create a new one."),
-    kpress("F9", "mod_query.query_workspace(_)"),
+    kpress(META.."F9", "mod_query.query_workspace(_)"),
 
     bdoc("Configure external display DP1 on."),
-    kpress("XF86Eject", "ioncore.exec_on(_, 'xrandr --output DP1 --auto --left-of LVDS1')"),
+    --kpress(META.."D", "ioncore.exec_on(_, 'xrandr --output DP-1 --auto --above eDP-1')"),
+    --kpress(META.."D", "ioncore.exec_on(_, 'xrandr --output DP-1 --auto --left-of eDP-1')"),
+    kpress(META.."D", "ioncore.exec_on(_, '/home/mitchell/usr/bin/external-on')"),
 
     bdoc("Configure external display DP1 off."),
-    kpress("XF86Display", "ioncore.exec_on(_, 'xrandr --output DP1 --off')"),
+    --kpress(META.."X", "ioncore.exec_on(_, 'xrandr --output DP-1 --off')"),
+    kpress(META.."X", "ioncore.exec_on(_, '/home/mitchell/usr/bin/external-off')"),
     
     bdoc("Query for a client window to go to."),
     kpress(META.."G", "mod_query.query_gotoclient(_)"),
@@ -181,33 +191,33 @@ defbindings("WFrame.toplevel", {
     kpress(META.."Shift+L", "WFrame.switch_next(_)"),
     kpress(META.."Shift+H", "WFrame.switch_prev(_)"),
     
-    submap(META.."K", {
-        -- Display tab numbers when modifiers are released
-        submap_wait("ioncore.tabnum.show(_)"),
-        
-        bdoc("Switch to n:th object within the frame."),
-        kpress("1", "WFrame.switch_nth(_, 0)"),
-        kpress("2", "WFrame.switch_nth(_, 1)"),
-        kpress("3", "WFrame.switch_nth(_, 2)"),
-        kpress("4", "WFrame.switch_nth(_, 3)"),
-        kpress("5", "WFrame.switch_nth(_, 4)"),
-        kpress("6", "WFrame.switch_nth(_, 5)"),
-        kpress("7", "WFrame.switch_nth(_, 6)"),
-        kpress("8", "WFrame.switch_nth(_, 7)"),
-        kpress("9", "WFrame.switch_nth(_, 8)"),
-        kpress("0", "WFrame.switch_nth(_, 9)"),
-        
-        bdoc("Move current object within the frame left/right."),
-        kpress("comma", "WFrame.dec_index(_, _sub)", "_sub:non-nil"),
-        kpress("period", "WFrame.inc_index(_, _sub)", "_sub:non-nil"),
-               
-        bdoc("Maximize the frame horizontally/vertically."),
-        kpress("H", "WFrame.maximize_horiz(_)"),
-        kpress("V", "WFrame.maximize_vert(_)"),
-
-        bdoc("Attach tagged objects to this frame."),
-        kpress("A", "ioncore.tagged_attach(_)"),
-    }),
+--    submap(META.."K", {
+--        -- Display tab numbers when modifiers are released
+--        submap_wait("ioncore.tabnum.show(_)"),
+--        
+--        bdoc("Switch to n:th object within the frame."),
+--        kpress("1", "WFrame.switch_nth(_, 0)"),
+--        kpress("2", "WFrame.switch_nth(_, 1)"),
+--        kpress("3", "WFrame.switch_nth(_, 2)"),
+--        kpress("4", "WFrame.switch_nth(_, 3)"),
+--        kpress("5", "WFrame.switch_nth(_, 4)"),
+--        kpress("6", "WFrame.switch_nth(_, 5)"),
+--        kpress("7", "WFrame.switch_nth(_, 6)"),
+--        kpress("8", "WFrame.switch_nth(_, 7)"),
+--        kpress("9", "WFrame.switch_nth(_, 8)"),
+--        kpress("0", "WFrame.switch_nth(_, 9)"),
+--        
+--        bdoc("Move current object within the frame left/right."),
+--        kpress("comma", "WFrame.dec_index(_, _sub)", "_sub:non-nil"),
+--        kpress("period", "WFrame.inc_index(_, _sub)", "_sub:non-nil"),
+--               
+--        bdoc("Maximize the frame horizontally/vertically."),
+--        kpress("H", "WFrame.maximize_horiz(_)"),
+--        kpress("V", "WFrame.maximize_vert(_)"),
+--
+--        bdoc("Attach tagged objects to this frame."),
+--        kpress("A", "ioncore.tagged_attach(_)"),
+--    }),
 })
 
 -- Bindings for floating frames.

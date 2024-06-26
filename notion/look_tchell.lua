@@ -13,28 +13,28 @@ de.defstyle("*", {
     highlight_pixels = 0,
     shadow_pixels = 0,
     border_style = "elevated",
-    font = "-*-*-*-*-*-*-6-*-*-*-*-*-*-*",
+    font = "-*-*-*-*-*-*-7-*-*-*-*-*-*-*",
     text_align = "center",
 })
 
 de.defstyle("tab", {
-    font = "-*-*-*-*-*-*-6-*-*-*-*-*-*-*",
+    font = "-*-*-*-*-*-*-7-*-*-*-*-*-*-*",
     de.substyle("active-selected", {
         shadow_colour = "white",
         highlight_colour = "white",
-        background_colour = "#dedddd",
+        background_colour = "#b0b0a0",
         foreground_colour = "white",
     }),
     de.substyle("active-unselected", {
         shadow_colour = "grey",
         highlight_colour = "grey",
-        background_colour = "#fbfbf1",
+        background_colour = "#ebebe1",
         foreground_colour = "#00454f",
     }),
     de.substyle("inactive-selected", {
         shadow_colour = "grey",
         highlight_colour = "grey",
-        background_colour = "#fbfbf1",
+        background_colour = "#dbdbd1",
         foreground_colour = "#00454f",
     }),
     de.substyle("inactive-unselected", {
@@ -100,26 +100,26 @@ de.defstyle("actnotify", {
     foreground_colour = "#eeeeee",
 })
 
-de.defstyle("tab", {
-    de.substyle("*-*-*-unselected-activity", {
-        shadow_colour = "#c04040",
-        highlight_colour = "#c04040",
-        background_colour = "#901010",
-        foreground_colour = "#eeeeee",
-    }),
-    
-    de.substyle("*-*-*-selected-activity", {
-        shadow_colour = "#c04040",
-        highlight_colour = "#c04040",
-        background_colour = "#b03030",
-        foreground_colour = "#ffffff",
-    }),
-    
-    de.substyle("*-*-*-tabnumber", {
-        background_colour = "#fbfbf1",
-        foreground_colour = "green",
-    }),
-})
+-- de.defstyle("tab-frame", {
+--     de.substyle("*-*-*-unselected-activity", {
+--         shadow_colour = "#c04040",
+--         highlight_colour = "#c04040",
+--         background_colour = "#901010",
+--         foreground_colour = "#eeeeee",
+--     }),
+--     
+--     de.substyle("*-*-*-selected-activity", {
+--         shadow_colour = "#c04040",
+--         highlight_colour = "#c04040",
+--         background_colour = "#b03030",
+--         foreground_colour = "#ffffff",
+--     }),
+--     
+--     de.substyle("*-*-*-tabnumber", {
+--         background_colour = "#fbfbf1",
+--         foreground_colour = "green",
+--     }),
+-- })
 
 de.defstyle("tab-frame", {
     spacing = 1,
